@@ -1,0 +1,22 @@
+auth:
+  adminUser: ${KEYCLOAK_ADMIN_USER}
+  adminPassword: ${KEYCLOAK_ADMIN_PASSWORD}
+postgresql:
+  enabled: false
+externalDatabase:
+  host: postgresql.postgresql.svc.cluster.local
+  port: 5432
+  user: ${KEYCLOAK_POSTGRES_USER}
+  password: ${KEYCLOAK_POSTGRES_PASSWORD}
+  database: ${KEYCLOAK_POSTGRES_DATABASE}
+proxy: edge
+production: true
+service:
+  type: ClusterIP
+extraEnvVars:
+    - name: PROXY_ADDRESS_FORWARDING
+      value: "true"
+    - name: FRONTEND_URL
+      value: "${KEYCLOAK_HOST}"
+ingress:
+    servicePort: https

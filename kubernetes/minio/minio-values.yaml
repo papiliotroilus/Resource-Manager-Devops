@@ -1,0 +1,14 @@
+auth:
+  existingSecret: minio-secret
+  rootUserSecretKey: root-user
+  rootPasswordSecretKey: root-password
+persistence:
+  enabled: true
+  existingClaim: minio-pvc
+volumePermissions:
+  enabled: true
+service:
+  type: ClusterIP
+  ports:
+    api: 9000
+    console: 9001

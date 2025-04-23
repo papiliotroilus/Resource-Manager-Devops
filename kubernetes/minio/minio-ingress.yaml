@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-ingress
+  namespace: minio
+  annotations:
+    cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
+spec:
+  tls:
+  - hosts:
+    - ${MINIO_HOST}
+    secretName: minio-tls
+  rules:
+  - host: ${MINIO_HOST}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: minio
+            port:
+              number: 9001

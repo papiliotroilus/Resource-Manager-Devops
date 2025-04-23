@@ -1,0 +1,61 @@
+name: resource-manager
+
+volumes:
+  postgres_data:
+
+networks:
+  dvloper-network:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres
+    container_name: resource-manager-postgres
+    restart: unless-stopped
+    networks:
+      - dvloper-network
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    image: resource-manager-backend
+    container_name: resource-manager-backend
+    restart: unless-stopped
+    networks:
+      - dvloper-network
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      LOGOUT_URL: ${LOGOUT_URL}
+      PORT: ${BACKEND_PORT}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_URL}/${POSTGRES_DB}
+      FRONTEND_URL: ${FRONTEND_URL}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_BACKEND_REALM}
+      KEYCLOAK_CLIENT: ${KEYCLOAK_BACKEND_CLIENT}
+      KEYCLOAK_SECRET: ${KEYCLOAK_BACKEND_SECRET}
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    depends_on:
+      - postgres
+
+  frontend:
+    image: resource-manager-frontend
+    container_name: resource-manager-frontend
+    restart: unless-stopped
+    networks:
+      - dvloper-network
+    ports:
+      - "443:443"
+    environment:
+      VITE_ROOT_URL: ${FRONTEND_URL}
+      VITE_BACKEND_URL: ${BACKEND_URL}
+      VITE_KEYCLOAK_URL: ${KEYCLOAK_URL}
+      VITE_KEYCLOAK_REALM: ${KEYCLOAK_FRONTEND_REALM}
+      VITE_KEYCLOAK_CLIENT: ${KEYCLOAK_FRONTEND_CLIENT}
+    depends_on:
+      - backend

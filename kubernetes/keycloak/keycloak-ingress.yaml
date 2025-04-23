@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-ingress
+  namespace: keycloak
+  annotations:
+    cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
+spec:
+  tls:
+  - hosts:
+    - ${KEYCLOAK_HOST}
+    secretName: keycloak-tls
+  rules:
+  - host: ${KEYCLOAK_HOST}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak
+            port:
+              number: 80

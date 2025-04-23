@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: restore
+spec:
+  template:
+    spec:
+      containers:
+        - name: restore-minio
+          image: bitnami/minio-client:latest
+          volumeMounts:
+            - name: restore-temp
+              mountPath: /tmp
+          command:
+            - /bin/bash
+            - -c
+            - |
+              # Configure mc to access the MinIO server
+              echo "Configuring MinIO client"
+              mc alias set backup http://minio.minio.svc.cluster.local:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+              # Download the latest backups from the MinIO server
+              echo "Fetching latest Keycloak database backup from MinIO"
+              LATEST_KCDB=$(mc ls backup/kcdb-backup | sort | tail -n 1 | awk '{print $NF}')
+              echo "Latest Keycloak backup: $LATEST_KCDB"
+              mc cp backup/kcdb-backup/$LATEST_KCDB /tmp/kcdb.sql
+              echo "Fetching latest app database backup from MinIO"
+              LATEST_RMDB=$(mc ls backup/rmdb-backup | sort | tail -n 1 | awk '{print $NF}')
+              echo "Latest App backup: $LATEST_RMDB"
+              mc cp backup/rmdb-backup/$LATEST_RMDB /tmp/rmdb.sql
+              # Check if backups were downloaded
+              if [ ! -s /tmp/kcdb.sql ] || [ ! -s /tmp/rmdb.sql ]; then
+                echo "Backups not found!"
+                exit 1
+              fi
+        - name: restore-postgres
+          image: bitnami/postgresql:latest
+          volumeMounts:
+            - name: restore-temp
+              mountPath: /tmp
+          command:
+            - /bin/bash
+            - -c
+            - |
+              # Restore Keycloak database
+              echo "Cleaning Keycloak database schema"
+              PGPASSWORD="${KEYCLOAK_POSTGRES_PASSWORD}" psql -h postgresql.postgresql.svc.cluster.local -U ${KEYCLOAK_POSTGRES_USER} -d ${KEYCLOAK_POSTGRES_DATABASE} -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+              echo "Restoring Keycloak database"
+              PGPASSWORD="${KEYCLOAK_POSTGRES_PASSWORD}" psql -q -h postgresql.postgresql.svc.cluster.local -U ${KEYCLOAK_POSTGRES_USER} -d ${KEYCLOAK_POSTGRES_DATABASE} -f /tmp/kcdb.sql
+              if [ $? -eq 0 ]; then
+                echo "Keycloak database restored successfully"
+              else
+                echo "Failed to restore Keycloak database!"
+                exit 1
+              fi
+              # Restore app database
+              echo "Cleaning app database schema"
+              PGPASSWORD="rm" psql -h postgresql.postgresql.svc.cluster.local -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+              echo "Restoring app database"
+              PGPASSWORD="${POSTGRES_PASSWORD}" psql -q -h postgresql.postgresql.svc.cluster.local -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /tmp/rmdb.sql
+              if [ $? -eq 0 ]; then
+                echo "App database restored successfully"
+              else
+                echo "Failed to restore app database!"
+                exit 1
+              fi
+              echo "Restore complete"
+      restartPolicy: OnFailure
+      volumes:
+        - name: restore-temp
+          emptyDir: {}

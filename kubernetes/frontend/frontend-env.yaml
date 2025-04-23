@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: frontend-env
+  namespace: resource-manager
+type: Opaque
+stringData:
+  VITE_ROOT_URL: ${FRONTEND_URL}
+  VITE_BACKEND_URL: ${BACKEND_URL}
+  VITE_KEYCLOAK_URL: ${KEYCLOAK_URL}
+  VITE_KEYCLOAK_REALM: ${KEYCLOAK_FRONTEND_REALM}
+  VITE_KEYCLOAK_CLIENT: ${KEYCLOAK_FRONTEND_CLIENT}

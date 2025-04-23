@@ -1,0 +1,10 @@
+auth:
+  existingSecret: postgresql-secret
+  secretKeys:
+    postgresPasswordKey: postgres-password
+primary:
+  persistence:
+    enabled: true
+    existingClaim: postgresql-pvc
+volumePermissions:
+  enabled: true

@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  namespace: resource-manager
+  annotations:
+    cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
+spec:
+  tls:
+  - hosts:
+    - ${BACKEND_HOST}
+    secretName: backend-tls
+  rules:
+  - host: ${BACKEND_HOST}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 80
