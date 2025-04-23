@@ -42,7 +42,7 @@ Basic setup:
 Database setup:
 - Create a `postgresql` namespace with a `postgresql-secret` containing the `postgres-password` key with the chosen PostgreSQL superuser password as value
 - From the `kubernetes/postgresql` directory, apply the `postgresql-pv.yaml` and `postgresql-pvc.yaml` manifests to create the persistent volume and claim for the database, then use the `postgresql-values.yaml` manifest to deploy the database with the Postgres Bitnami Helm chart, all in the dedicated namespace.
-- Enter the PostgreSQL pod as superuser and create separate users for the Keycloak and resource manager backend with the following instructions as a model:
+- Enter the PostgreSQL pod as superuser and create separate users for the Keycloak and resource manager backend with the following commands as a model, replacing the pod name, credentials, and database names as needed:
 ```
 kubectl exec -it postgresql-0 -n postgresql -- psql -U postgres
 CREATE USER kc WITH LOGIN PASSWORD 'kc';
