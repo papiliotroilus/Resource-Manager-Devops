@@ -1,4 +1,4 @@
-This repository contains scripts for putting together the resource manager, along with related information.
+This repository contains information, scripts, and manifests for putting together a resource manager app, along with related information.
 
 The resource manager has 4 parts, namely the Keycloak instance, the PostgreSQL database, the backend (housed in the `resource-manager-backend` repository), and the frontend (housed in the `resource-manager-frontend` repository). The Keycloak instance is to be run separately. The backend and frontend have their own separate repositories with instructions on how to run them locally as well as how to build a Docker image for them.
 
