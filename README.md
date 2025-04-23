@@ -37,7 +37,7 @@ To set up the resource manager as part of a Kubernetes cluster, follow the instr
 Basic setup:
 - Set up k3s with Traefik and Cert-Manager in their own dedicated `traefik` and `cert-manager` namespaces.
 - Create a secret containing the `api-token` key with the certificate issuer API token as its value.
-- Apply the given `cluster-issuer.yaml` template in the `kubernetes` directory, replacing the name `CLUSTER_ISSUER` as well as the credentials `CERT_EMAIL`, `CERT_SERVER` and `CERT_TOKEN` with environment variables, envsubst, manually, or by implementing a secret (**the same will apply for any later substitutions in the templates**).
+- Apply the given `kubernetes/cluster-issuer.yaml` template, replacing the name `CLUSTER_ISSUER` as well as the credentials `CERT_EMAIL`, `CERT_SERVER` and `CERT_TOKEN` with environment variables, envsubst, manually, or by implementing a secret (**the same will apply for any later substitutions in the templates**).
 
 Database setup:
 - Create a `postgresql` namespace with a `postgresql-secret` containing the `postgres-password` key with the chosen PostgreSQL superuser password as value
